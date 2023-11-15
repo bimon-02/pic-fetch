@@ -15,8 +15,6 @@ import lgThumbnail from "lightgallery/plugins/thumbnail";
 import lgZoom from "lightgallery/plugins/zoom";
 import { useRef } from "react";
 import { LightGallery } from "lightgallery/lightgallery";
-import { GetStaticProps } from "next";
-import { promise, string } from "zod";
 
 const tabs = [
   {
@@ -37,19 +35,7 @@ const backgroundImage = [
   "https://images.unsplash.com/photo-1547479082-462b00aadd14?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 ];
 
-
-
-type HomeProps = {
-  images: {
-    id: number;
-    url: string;
-    category: string;
-  }[];
-};
-
-export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-
-  const images = [
+const images = [
   {
     id: 1,
     url: "https://images.unsplash.com/photo-1551020689-ad3253b380d1?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -74,16 +60,11 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
     id: 5,
     url: "https://images.unsplash.com/photo-1586796105950-b885786d8597?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     category: "landscape",
-  },
-];
-  return Promise.resolve({ 
-    props: {
-      images,
-    },
-  })
-}
+  },]
 
-const gallery = ({ images }: HomeProps) => {
+
+
+const gallery = () => {
   const lightboxRef = useRef<LightGallery | null>(null);
 
   return (
@@ -157,7 +138,7 @@ const gallery = ({ images }: HomeProps) => {
                       key={image.id}
                       src={image.url}
                       alt={`photo-${image.id}`}
-                      className="my-4 cursor-pointer hover:opacity-70"
+                      className="my-4 cursor-pointer transition-all transition-filter hover:filter-none duration-300 hover:ring-2 hover:ring-white"
                       width={500}
                       height={300}
                       placeholder="blur"
