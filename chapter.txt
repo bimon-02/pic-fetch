@@ -1,0 +1,11 @@
+Plan
+
+1. Layout
+2. Masonry Grid
+3. Lightbox
+4. 
+
+
+
+Dependencies
+1. Light Gallery

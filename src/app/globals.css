@@ -2,3 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer {
+    html, body {
+        height: 100%;
+        color: white;
+    }
+
+    #__className_e66fe9 {
+        height: 100%;
+    }
+}
+
