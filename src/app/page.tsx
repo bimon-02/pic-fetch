@@ -1,12 +1,15 @@
 import React from "react";
-import LoginForm from "@/components/LoginForm";
+import LoginForm from "./login/page";
+import Portfolio from "./Portfolio";
+// import LoginForm from "@/app/LoginPage";
 
-const LoginPage = () => {
+const Home = () => {
   return (
     <div>
-      <LoginForm />
+      <Portfolio />
+      {/* <LoginForm /> */}
     </div>
   );
 };
 
-export default LoginPage;
+export default Home;

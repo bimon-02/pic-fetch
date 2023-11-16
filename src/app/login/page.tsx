@@ -3,7 +3,7 @@
 import React from "react";
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "../utils/ValidationSchemas";
+import { loginSchema } from "../../models/LoginSchema";
 import FormInput from "@/components/Input";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
@@ -36,7 +36,7 @@ const LoginForm = () => {
 
     if (isAuthenticated) {
       toast.success(`You have successfully logged in.`);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
       router.push("/gallery");
     } else {
       toast.error(`Login failed. Please check your credentials.`);
@@ -73,18 +73,15 @@ const LoginForm = () => {
               disabled={isSubmitting}
             />
 
-            
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-black text-white p-2 rounded-lg mb-6 hover:scale(0.9)"
+              className="w-full mt-10 bg-black text-white p-2 rounded-lg  hover:scale(0.9)"
               style={{ transition: "all 0.3s ease-in-out" }}
             >
               Sign in
             </button>
           </form>
-
-        
         </div>
         {/* right side */}
         <div className="relative">
