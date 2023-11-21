@@ -1,16 +1,15 @@
-import Image from 'next/image'
-import React from 'react'
-import { backgroundImage } from './Images';
+import Image from "next/image";
+import React from "react";
+import { backgroundImage } from "./Images";
 
 const Background = () => {
   return (
     <>
       <Image
-        className="fixed top-0 left-0 z-0 object-cover"
+        className="fixed top-0 left-0 z-0 "
         src={backgroundImage[0]}
         alt="background image"
-        width={2070}
-        height={1080}
+        layout="fill"
         placeholder="blur"
         // loading="lazy"
         blurDataURL="data:image/jpeg;base64,..."
@@ -20,4 +19,4 @@ const Background = () => {
   );
 };
 
-export default Background
+export default Background;

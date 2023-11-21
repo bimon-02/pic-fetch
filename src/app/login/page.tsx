@@ -52,20 +52,23 @@ const LoginForm = () => {
           <span className="font-light text-gray-400 mb-8">
             Enter the email and the password provided.
           </span>
-          <form onSubmit={handleSubmit(onSubmit)} className="py-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="py-4 ">
             {/* Email input using the FormInput component */}
             <FormInput
+              name="email"
               label="Email"
               type="email"
               id="email"
               register={register}
               error={errors.email}
               disabled={isSubmitting}
+              
             />
 
             {/* Password input using the FormInput component */}
             <FormInput
               label="Password"
+              name="password"
               type="password"
               id="password"
               register={register}

@@ -1,6 +1,8 @@
 import React from 'react'
 import TabGroup from './TabGroup';
 
+
+
 const MainSection = () => {
   return (
     <main className="relative pt-[110px] z-20">
