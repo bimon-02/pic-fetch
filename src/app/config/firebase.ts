@@ -24,6 +24,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 
 const firebaseConfig = {
@@ -33,10 +34,11 @@ const firebaseConfig = {
   storageBucket: "pic-fetch-a3d19.appspot.com",
   messagingSenderId: "291007434607",
   appId: "1:291007434607:web:74630449b39de15a41629a"
-};
+}; 
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const imgDB = getStorage(app);
 const db = getFirestore(app);
 
-export { db };
+export { db, imgDB };
