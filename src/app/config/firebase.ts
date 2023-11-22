@@ -22,10 +22,30 @@
 // export { db };
 
 // Import the functions you need from the SDKs you need
+// import { initializeApp } from "firebase/app";
+// import { getFirestore } from "firebase/firestore";
+// import { getStorage } from "firebase/storage";
+
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCdJZItUz2_wPemqoURvHKqARsFC8kWUo0",
+//   authDomain: "pic-fetch-a3d19.firebaseapp.com",
+//   projectId: "pic-fetch-a3d19",
+//   storageBucket: "pic-fetch-a3d19.appspot.com",
+//   messagingSenderId: "291007434607",
+//   appId: "1:291007434607:web:74630449b39de15a41629a"
+// }; 
+
+// // Initialize Firebase
+// const app = initializeApp(firebaseConfig);
+// const imgDB = getStorage(app);
+// const db = getFirestore(app);
+
+// export { db, imgDB };
+
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyCdJZItUz2_wPemqoURvHKqARsFC8kWUo0",
@@ -33,12 +53,12 @@ const firebaseConfig = {
   projectId: "pic-fetch-a3d19",
   storageBucket: "pic-fetch-a3d19.appspot.com",
   messagingSenderId: "291007434607",
-  appId: "1:291007434607:web:74630449b39de15a41629a"
-}; 
+  appId: "1:291007434607:web:74630449b39de15a41629a",
+};
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const imgDB = getStorage(app);
-const db = getFirestore(app);
+const firebaseApp = initializeApp(firebaseConfig);
+const storage = getStorage(firebaseApp);
+const firestore = getFirestore(firebaseApp);
 
-export { db, imgDB };
+export { firestore, storage };
