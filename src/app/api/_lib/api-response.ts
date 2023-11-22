@@ -1,20 +1,24 @@
 import { NextResponse } from "next/server";
 type APIResponseType = {
-  status: number;
   message: string;
-  error?: any;
+  status: number;
   data?: any;
+  error?: any;
+  token?: any;
+  code?: string;
 };
-export const APIRESPONSE = ({
-  error,
+export const APIRES = ({
   message,
   status,
   data,
+  error,
+  code,
 }: APIResponseType) => {
   return NextResponse.json({
-    status: status,
     message: message,
-    error: error,
+    status: status,
     data: data,
+    code: code,
+    error: error,
   });
 };
