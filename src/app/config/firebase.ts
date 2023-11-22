@@ -1,27 +1,3 @@
-// // Import the functions you need from the SDKs you need
-// import { initializeApp } from "firebase/app";
-// import { getFirestore } from "firebase/firestore";
-
-
-
-
-// const firebaseConfig = {
-//   apiKey: "AIzaSyBvpslLMNzw77u9RPlu7OpbTlB7QSM5mfk",
-//   authDomain: "pic-fetch-886da.firebaseapp.com",
-//   projectId: "pic-fetch-886da",
-//   storageBucket: "pic-fetch-886da.appspot.com",
-//   messagingSenderId: "772171486701",
-//   appId: "1:772171486701:web:d91fc79cfe18d77d8e83e4",
-//   measurementId: "G-KVPJCM0QN2",
-// };
-
-// // Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const db = getFirestore(app);
-
-// export { db };
-
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
