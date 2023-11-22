@@ -39,7 +39,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const imgDB = getStorage(app);
-const db = getFirestore(app);
 
-export { db, imgDB };
+export { imgDB };
+export const db = getFirestore(app);
 export const auth = getAuth(app);
