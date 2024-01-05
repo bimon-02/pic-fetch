@@ -8,6 +8,7 @@ import FormInput from "@/components/Input";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import Link from "next/link";
+import Image from "next/image";
 
 type Inputs = {
   email: string;
@@ -37,7 +38,7 @@ const LoginForm = () => {
     if (isAuthenticated) {
       toast.success(`You have successfully logged in.`);
       // await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.push("/gallery");
+      router.push("/fire/Firetest");
     } else {
       toast.error(`Login failed. Please check your credentials.`);
     }
@@ -62,7 +63,6 @@ const LoginForm = () => {
               register={register}
               error={errors.email}
               disabled={isSubmitting}
-              
             />
 
             {/* Password input using the FormInput component */}
@@ -88,10 +88,12 @@ const LoginForm = () => {
         </div>
         {/* right side */}
         <div className="relative">
-          <img
-            src="https://images.pexels.com/photos/3014019/pexels-photo-3014019.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+          <Image
+            src="/novs_10_06_-20231128-0001.jpg"
             alt="img"
             className="w-[400px] h-full hidden rounded-r-2xl md:block object-cover"
+            width={400}
+            height={500}
           />
           {/* text on image */}
           <div className="absolute hidden bottom-10 right-6 p-6 bg-white bg-opacity-30 backdrop-blur-sm rounded drop-shadow-lg md:block">
