@@ -35,32 +35,21 @@ const LoginForm = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data: LoginSchemaType) => {
     try {
-      // TODO: send the data to the server
-      const hashedPassword = await hashPassword({
-        password: data.password,
-      });
-      console.log(hashedPassword);
-      toast(hashedPassword);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const onTestClick = async () => {
-    try {
       const res = await axios.post("/api/auth/sign-in", {
-        email: "123@gmail.com",
-        password: "12345678Ua@",
+        email: data.email,
+        password: data.password,
       });
       if (res.data.status === 401) {
         console.log(res.data.message);
         toast(res.data.message);
         return;
       } else if (res.data.status === 200) {
-        console.log(res.data.message);
+        console.log(res.data);
         toast(res.data.message);
         return;
       }
+      toast(res.data.message);
+      return;
     } catch (error: any) {
       console.log(error.code);
       if (error.code === "ECONNREFUSED") {
@@ -74,6 +63,7 @@ const LoginForm = () => {
       toast(error.message);
     }
   };
+
   return (
     <div className='flex items-center justify-center min-h-screen bg-gray-100'>
       <div className='relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0'>
@@ -83,7 +73,6 @@ const LoginForm = () => {
           <span className='font-light text-gray-400 mb-8'>
             Enter the email and the password provided.
           </span>
-          <Button onClick={onTestClick}>Click</Button>
           <form onSubmit={handleSubmit(onSubmit)} className='py-4 '>
             {/* Email input using the FormInput component */}
             <FormInput
@@ -138,7 +127,6 @@ const LoginForm = () => {
           </div>
         </div>
       </div>
-      <Toaster position='bottom-right' />
     </div>
   );
 };
