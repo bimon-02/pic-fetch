@@ -34,6 +34,7 @@ const LoginForm = () => {
   });
 
   const onSubmit: SubmitHandler<Inputs> = async (data: LoginSchemaType) => {
+
     try {
       const res = await axios.post("/api/auth/sign-in", {
         email: data.email,
@@ -61,6 +62,7 @@ const LoginForm = () => {
         return;
       }
       toast(error.message);
+
     }
   };
 
