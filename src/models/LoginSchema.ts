@@ -3,12 +3,8 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z
-  .string()
-  .email("Invalid email format")
-  .min(5, "Email must be at least 5 characters")
-  .refine((value) => value.trim() !== "", {
-    message: "Email is required",
-  }),
+    .string()
+    .email("Invalid email format").trim(),
   password: z
     .string()
     .min(1, "Password is required")
@@ -25,8 +21,7 @@ export const loginSchema = z.object({
     .refine((value) => /[!@#$%^&*]/.test(value), {
       message:
         "Password must contain at least one special character (!@#$%^&*)",
-    })
-    .refine((value) => !/\s/.test(value), {
-      message: "Password cannot contain spaces",
     }),
 });
+
+export type LoginSchemaType = z.infer<typeof loginSchema>;

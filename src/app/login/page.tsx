@@ -31,10 +31,10 @@ const LoginForm = () => {
     mode: "onSubmit",
   });
 
-  const onSubmit: SubmitHandler<Inputs> = async (data: FieldValues) => {
+  const onSubmit: SubmitHandler<Inputs> = async (data: LoginSchemaType) => {
     // TODO: Implement your login logic here
     const isAuthenticated = true;
-
+data
     if (isAuthenticated) {
       toast.success(`You have successfully logged in.`);
       // await new Promise((resolve) => setTimeout(resolve, 2000));
