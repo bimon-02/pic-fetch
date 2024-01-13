@@ -38,7 +38,7 @@ const LoginForm = () => {
     if (isAuthenticated) {
       toast.success(`You have successfully logged in.`);
       // await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.push("/fire/Firetest");
+      router.push("/gallery");
     } else {
       toast.error(`Login failed. Please check your credentials.`);
     }

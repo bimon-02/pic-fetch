@@ -53,6 +53,7 @@ const TabPannelsCopyCopy = () => {
     landscapes: galleryImages.filter((image) => image.category === "landscape"),
     portraits: galleryImages.filter((image) => image.category === "portraits"),
   };
+   const isNotKeep = (image:any) => !/\.(keep)$/i.test(image.url);
 
   return (
     <Tab.Panels className="h-full my-6 h-100 max-w-[900px] w-full p-2 sm:p-4">
@@ -80,10 +81,12 @@ const TabPannelsCopyCopy = () => {
               // lgMediumZoom,
             ]}
             dynamic
-            dynamicEl={imagesByCategory[category].map((image) => ({
-              src: image.url,
-              thumb: image.url,
-            }))}
+            dynamicEl={imagesByCategory[category]
+              .filter(isNotKeep)
+              .map((image) => ({
+                src: image.url,
+                thumb: image.url,
+              }))}
           />
           <Masonry
             breakpointCols={{

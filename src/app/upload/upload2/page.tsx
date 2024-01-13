@@ -6,12 +6,13 @@ import {
   getDownloadURL,
   list,
   ref,
+  uploadBytes,
   uploadBytesResumable,
 } from "firebase/storage";
 import { storage } from "@/app/config/firebase";
 import { Toaster, toast } from "sonner";
 import LinearProgress from "@mui/material/LinearProgress";
-import { Box, FormHelperText } from "@mui/material";
+import { Box, FormHelperText, TextField } from "@mui/material";
 import Image from "next/image";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -35,21 +36,48 @@ const UploadPage: React.FC<UploadPageProps> = () => {
   );
   const [progress, setProgress] = useState(0);
   const [buffer, setBuffer] = useState(10);
+  const [password, setPassword] = useState("");
+  const[owner, setOwner] = useState("");
+  const [allOwners, setAllOwners] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchAllCategories();
-  }, []);
+    fetchAllOwners();
+  },[])
+  
+  
 
+  const fetchAllOwners = async () => {
+     try {
+       const photoDirectoryRef = ref(storage, "photo");
+       const photoItems = await list(photoDirectoryRef);
+       const owners = photoItems.prefixes.map((prefix) => prefix.name);
+       setAllOwners(owners);
+     } catch (error) {
+       console.error("Error fetching owners:", error);
+     }
+  }
+
+useEffect(() => {
   const fetchAllCategories = async () => {
     try {
-      const photoDirectoryRef = ref(storage, "photo");
-      const photoItems = await list(photoDirectoryRef);
-      const categories = photoItems.prefixes.map((prefix) => prefix.name);
-      setAllCategories(categories);
+      if (owner) {
+        const ownerDirectoryRef = ref(storage, `photo/${owner}`);
+        const ownerItems = await list(ownerDirectoryRef);
+        const categories = ownerItems.prefixes.map((prefix) => prefix.name);
+        setAllCategories(categories);
+      } else {
+        setAllCategories([]); // If no owner selected, clear the categories
+      }
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
+
+  fetchAllCategories();
+}, [owner]);
+
+
+
 
   useEffect(() => {
     const fetchUploadedFiles = async () => {
@@ -122,6 +150,8 @@ const UploadPage: React.FC<UploadPageProps> = () => {
     }
   };
 
+ 
+
   const handleCategoryChange = (e: SelectChangeEvent<string>) => {
     const selectedCategory = e.target.value;
 
@@ -140,6 +170,10 @@ const UploadPage: React.FC<UploadPageProps> = () => {
     }
   };
 
+  const generateFolderPath=()=>{
+    return`photo/${owner}${category?`/${category}`:''}`
+  }
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -148,67 +182,38 @@ const UploadPage: React.FC<UploadPageProps> = () => {
   };
 
   const upload = async () => {
-    await simulateBufferAndRetry();
-
     if (selectedFiles.length > 0) {
-      if (!category) {
-        toast.error("Please select a category");
+      if (!password) {
+        toast.error("Please enter a Password");
         return;
       }
+       if (!owner) {
+         toast.error("Please enter the owner's name");
+         return;
+       }
 
       try {
-        const uploadPromises: Promise<string>[] = selectedFiles.map(
-          (file, index) => {
-            return new Promise((resolve, reject) => {
-              const fileRef = ref(storage, `photo/${category}/${file.name}`);
-              const task = uploadBytesResumable(fileRef, file);
+        const folderPath = generateFolderPath();
 
-              setUploadTasks((prevTasks) => ({ ...prevTasks, [index]: task }));
+        const uploadPromises = selectedFiles.map(async (file) => {
+          const filePath=`${folderPath}/${file.name}`
+          const fileRef = ref(storage, filePath);
+          const data = await uploadBytes(fileRef, file);
+          console.log("Upload successful", data);
 
-              task.on(
-                "state_changed",
-                (snapshot) => {
-                  const progress =
-                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                  setUploadProgress((prevProgress) => ({
-                    ...prevProgress,
-                    [index]: progress,
-                  }));
-                },
-                (error) => {
-                  if (error.code === "storage/canceled") {
-                    console.info(`Upload at index ${index} canceled.`);
-                  } else {
-                    console.error("Upload error", error);
-                    reject(error);
-                  }
-                },
-                async () => {
-                  const url = await getDownloadURL(task.snapshot.ref);
-                  resolve(url);
-                }
-              );
-            });
-          }
-        );
+          const url = await getDownloadURL(data.ref);
+          console.log("File URL", url);
+
+          return url;
+        });
 
         const urls = await Promise.all(uploadPromises);
 
         setUploadedFiles([...uploadedFiles, ...urls]);
-        toast.success("Files uploaded successfully!");
         setSelectedFiles([]);
-        setUploadedFileNames([
-          ...uploadedFileNames,
-          ...selectedFiles.map((file) => file.name),
-        ]);
-      } catch (error: any) {
-        if (error.code !== "storage/canceled") {
-          console.error("Upload error", error);
-          toast.error("Upload failed. Please try again.");
-        }
-      } finally {
-        setUploadTasks({});
-        setUploadProgress({});
+      } catch (error) {
+        console.error("Upload error", error);
+        toast.error("Upload failed. Please try again.");
       }
     } else {
       toast.warning("Please select a file to upload.");
@@ -242,6 +247,26 @@ const UploadPage: React.FC<UploadPageProps> = () => {
     setSelectedFiles(updatedFiles);
   };
 
+  const handleOwnerChange = (e: SelectChangeEvent<string>) => {
+    const selectedOwner = e.target.value;
+
+    if (selectedOwner === "addNewOwner") {
+      const newOwner = window.prompt("Enter a new owner:");
+
+      if (newOwner && !allOwners.includes(newOwner)) {
+        setAllOwners([...allOwners, newOwner]);
+        setOwner(newOwner);
+        toast.success(` "${newOwner}" added successfully!`);
+      } else {
+        setOwner("");
+      }
+    } else if (selectedOwner === "removeOwner") {
+      setOwner("");
+    } else {
+      setOwner(selectedOwner);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
@@ -253,24 +278,78 @@ const UploadPage: React.FC<UploadPageProps> = () => {
           </span>
           <div className="my-4">
             <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Password:
+            </label>
+            <div>
+              <TextField
+                id="password"
+                label="Password"
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                fullWidth
+                variant="outlined"
+                required
+                // error={/* Add your validation logic here if needed */}
+                // helperText={/* Provide additional information or error messages */}
+              />
+            </div>
+          </div>
+          <div className="my-4">
+            <label
+              htmlFor="owner"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Select an owner or add a new one:
+            </label>
+            <div>
+              <FormControl required className="w-full">
+                <InputLabel id="owner-label">Owner</InputLabel>
+                <Select
+                  labelId="owner-label"
+                  id="owner"
+                  value={owner}
+                  label="Owner *"
+                  onChange={handleOwnerChange}
+                >
+                  <MenuItem value="" disabled>
+                    <em>Select an owner...</em>
+                  </MenuItem>
+                  {allOwners.map((ownerOption) => (
+                    <MenuItem key={ownerOption} value={ownerOption}>
+                      {ownerOption}
+                    </MenuItem>
+                  ))}
+                  <MenuItem value="addNewOwner">Add New Owner</MenuItem>
+                  <MenuItem value="">Remove Owner</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+          </div>
+          <div className="my-4">
+            <label
               htmlFor="category"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Select a category or add a new one:
             </label>
             <div>
-              <FormControl required className="w-full"> 
+              <FormControl required className="w-full">
                 <InputLabel id="category-label">Category</InputLabel>
                 <Select
                   labelId="category-label"
                   id="category"
                   value={category}
-                  label="Category *"
+                  label="Category"
                   onChange={handleCategoryChange}
                 >
                   <MenuItem value="" disabled>
                     <em>Select a category...</em>
                   </MenuItem>
+                  <MenuItem value="">Root Folder</MenuItem>
                   {allCategories.map((categoryOption) => (
                     <MenuItem key={categoryOption} value={categoryOption}>
                       {categoryOption}
@@ -278,9 +357,6 @@ const UploadPage: React.FC<UploadPageProps> = () => {
                   ))}
                   <MenuItem value="addNewCategory">Add New Category</MenuItem>
                 </Select>
-                <FormHelperText className="mt-1 text-red-500 text-sm">
-                  Required
-                </FormHelperText>
               </FormControl>
             </div>
 
@@ -351,14 +427,6 @@ const UploadPage: React.FC<UploadPageProps> = () => {
                           Cancel Upload
                         </button>
                         {/* Add a conditional check for showing "Uploaded" */}
-
-                        <Box sx={{ width: "100%" }}>
-                          <LinearProgress
-                            variant="buffer"
-                            value={progress}
-                            valueBuffer={buffer}
-                          />
-                        </Box>
                       </>
                     ) : (
                       <button
@@ -380,9 +448,18 @@ const UploadPage: React.FC<UploadPageProps> = () => {
           <div>
             <p>Uploaded Files:</p>
             <ul>
-              {uploadedFiles.map((uploadedFile, index) => (
-                <li key={index}>{uploadedFile}</li>
-              ))}
+              {uploadedFiles
+                .filter((uploadedFile) => !uploadedFile.includes(".keep"))
+                .map((filteredFile, index) => (
+                  <li key={index}>
+                    <Image
+                      src={filteredFile}
+                      alt={`Uploaded Image ${index + 1}`}
+                      width={200}
+                      height={200}
+                    />
+                  </li>
+                ))}
             </ul>
           </div>
         )}

@@ -179,10 +179,12 @@ const TabPannelsCopy: React.FC<TabPannelsCopyProps> = ({
           lgVideo,
         ]}
         dynamic
-        dynamicEl={uploadedFiles.map((url) => ({
-          src: url,
-          thumb: url,
-        }))}
+        dynamicEl={uploadedFiles
+          .filter((url) => !url.includes(".keep"))
+          .map((url) => ({
+            src: url,
+            thumb: url,
+          }))}
       />
 
       <Masonry
@@ -193,22 +195,24 @@ const TabPannelsCopy: React.FC<TabPannelsCopyProps> = ({
         className="my-masonry-grid flex gap-4"
         columnClassName="my-masonry-grid_column"
       >
-        {uploadedFiles.map((url, index) => (
-          <div className="relative" key={index}>
-            <Image
-              src={url}
-              alt={`uploaded-photo-${index}`}
-              className="my-4 "
-              width={500}
-              height={300}
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,..."
-              onClick={() => {
-                lightboxRef.current?.openGallery(index);
-              }}
-            />
-          </div>
-        ))}
+        {uploadedFiles
+          .filter((url) => !url.includes(".keep"))
+          .map((url, index) => (
+            <div className="relative" key={index}>
+              <Image
+                src={url}
+                alt={`uploaded-photo-${index}`}
+                className="my-4 "
+                width={500}
+                height={300}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,..."
+                onClick={() => {
+                  lightboxRef.current?.openGallery(index);
+                }}
+              />
+            </div>
+          ))}
       </Masonry>
     </Tab.Panels>
   );
