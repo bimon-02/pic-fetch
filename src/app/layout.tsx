@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Expletus_Sans } from 'next/font/google'
 import './globals.css'
+import Navbar from '@/components/Navbar'
 
 const inter = Expletus_Sans({
   subsets: ['latin'],
@@ -19,7 +20,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body>{children}</body>
+      {/* <Navbar/> */}
+      <body>
+        <Navbar /> 
+        {children}
+      </body>
     </html>
   );
 }

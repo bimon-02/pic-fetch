@@ -1,6 +1,11 @@
+"use client";
+
+// Navbar.js
 import Link from "next/link";
 import Image from "next/image";
 import React, { useState } from "react";
+
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Bimon";
 
 const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -14,25 +19,30 @@ const Navbar = () => {
       {/* Logo and Name */}
       <div className="flex items-center space-x-4">
         <Image
-          src="/logo.png" // Replace with your actual logo image path
+          src="" // Replace with your actual logo image path
           alt="Logo"
           width={32}
           height={32}
         />
-        <span className="uppercase text-xl font-medium">
-          Mark's Photography
-        </span>
+        <span className="uppercase text-xl font-medium">{siteName}</span>
       </div>
 
       {/* Navigation Links */}
       <div className="hidden sm:flex items-center space-x-4">
-        <Link href="/login" className=" text-white hover:bg-opacity-90 pr-4">
+        <Link href="/login" className="hover:bg-opacity-90 pr-4 text-white">
           Sign In
         </Link>
-        <Link href="/" className=" text-white hover:bg-opacity-90 pr-4">
+        <Link href="/" className="hover:bg-opacity-90 pr-4 text-white">
           Home
         </Link>
-        <Link href="/upload" className=" text-white hover:bg-opacity-90 pr-4">
+        <Link href="/gallery" className="hover:bg-opacity-90 pr-4 text-white">
+          Gallery
+        </Link>
+        <Link
+          href="/upload"
+          target="_blank"
+          className="hover:bg-opacity-90 pr-4 text-white"
+        >
           Upload
         </Link>
       </div>
@@ -46,14 +56,14 @@ const Navbar = () => {
           ☰
         </button>
         {showDropdown && (
-          <div className="absolute top-16 right-4 bg-black p-4 rounded shadow">
-            <Link href="/login" className="block mb-2 text-white">
+          <div className="absolute top-16 right-4 bg-black p-4 rounded shadow text-white">
+            <Link href="/login" className="block mb-2">
               Sign In
             </Link>
-            <Link href="/" className="block mb-2 text-white">
+            <Link href="/" className="block mb-2">
               Home
             </Link>
-            <Link href="/upload" className="block text-white">
+            <Link href="/upload" className="block">
               Upload
             </Link>
           </div>

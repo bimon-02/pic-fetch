@@ -1,31 +1,20 @@
 "use client";
-
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { getDownloadURL, list, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
 import { storage } from "@/app/config/firebase";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { FileWithPath, useDropzone } from "react-dropzone";
 import {
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   SelectChangeEvent,
-  TextField,
 } from "@mui/material";
-import FileDropzone from "@/components/FileDropzone";
-import LinearWithValueLabel from "@/components/LinearProgress";
+import { UploadPageProps } from "./page";
 
-type UploadPageProps = {};
-
-const UploadPage: React.FC<UploadPageProps> = () => {
+export const UploadPage: React.FC<UploadPageProps> = () => {
   const router = useRouter();
 
   const [fileUpload, setFileUpload] = useState<File | null>(null);
@@ -38,10 +27,6 @@ const UploadPage: React.FC<UploadPageProps> = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState<string>("");
- 
-  
 
   const redirectToFireTest = () => {
     router.push("/fire/Firetest");
@@ -62,6 +47,47 @@ const UploadPage: React.FC<UploadPageProps> = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchUploadedFiles = async () => {
+      try {
+        let urls: string[] = [];
+
+        if (viewOption === "category" && category) {
+          const categoryDirectoryRef = ref(storage, `photo/${category}`);
+          const categoryItems = await list(categoryDirectoryRef);
+          urls = await Promise.all(
+            categoryItems.items.map(async (item) => await getDownloadURL(item))
+          );
+        } else if (viewOption === "all") {
+          const allItems = await list(ref(storage, "photo"));
+          const rootUrls = await Promise.all(
+            allItems.items.map(async (item) => await getDownloadURL(item))
+          );
+
+          const subfolderUrls = await Promise.all(
+            allCategories.map(async (cat) => {
+              const subfolderDirectoryRef = ref(storage, `photo/${cat}`);
+              const subfolderItems = await list(subfolderDirectoryRef);
+              return Promise.all(
+                subfolderItems.items.map(
+                  async (item) => await getDownloadURL(item)
+                )
+              );
+            })
+          );
+
+          urls = [...rootUrls, ...subfolderUrls.flat()];
+        }
+
+        setUploadedFiles(urls);
+      } catch (error) {
+        console.error("Error fetching uploaded files:", error);
+      }
+    };
+
+    fetchUploadedFiles();
+  }, [viewOption, category, allCategories]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -73,8 +99,15 @@ const UploadPage: React.FC<UploadPageProps> = () => {
     const selectedCategory = e.target.value;
 
     if (selectedCategory === "addNewCategory") {
-      setShowNewCategoryModal(true);
-     
+      const newCategory = window.prompt("Enter a new category:");
+
+      if (newCategory && !allCategories.includes(newCategory)) {
+        setAllCategories([...allCategories, newCategory]);
+        setCategory(newCategory);
+        toast.success(`Category "${newCategory}" added successfully!`);
+      } else {
+        setCategory("");
+      }
     } else {
       setCategory(selectedCategory);
     }
@@ -109,7 +142,6 @@ const UploadPage: React.FC<UploadPageProps> = () => {
         const urls = await Promise.all(uploadPromises);
 
         setUploadedFiles([...uploadedFiles, ...urls]);
-        setSelectedFiles([]);
       } catch (error) {
         console.error("Upload error", error);
         toast.error("Upload failed. Please try again.");
@@ -148,38 +180,8 @@ const UploadPage: React.FC<UploadPageProps> = () => {
     setSelectedFiles(updatedFiles);
   };
 
-  const handleCloseModal = () => {
-    setShowNewCategoryModal(false);
-    setCategory("");
-  };
-
-  const handleAddCategory = async () => {
-    if (newCategoryName && !allCategories.includes(newCategoryName)) {
-      console.log("Adding category:", newCategoryName);
-
-      const categoryFolderPath = `photo/${newCategoryName}/`;
-
-      const placeHolderRef = ref(storage, categoryFolderPath + ".keep");
-      await uploadBytes(placeHolderRef, new Uint8Array(0));
-
-      setAllCategories([...allCategories, newCategoryName]);
-
-      toast.success(`Category "${newCategoryName}" added successfully`);
-      handleCloseModal();
-      setCategory(newCategoryName);
-    } else {
-      if (!newCategoryName) {
-        console.log("Empty category name");
-        toast.error("Please enter a valid category name.");
-      } else {
-        console.log("Category already exists");
-        toast.warning(`Category "${newCategoryName}" already exists.`);
-      }
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
         {/* Left side */}
         <div className="flex flex-col justify-center p-8 md:p-14">
@@ -196,40 +198,52 @@ const UploadPage: React.FC<UploadPageProps> = () => {
             </label>
             {/* Category Selector */}
             <div>
-              <FormControl required className="w-full">
+              <FormControl required classnName="w-full">
                 <InputLabel id="category-label">Category</InputLabel>
                 <Select
                   labelId="category"
                   id="category"
                   value={category}
                   onChange={handleCategoryChange}
-                  label="Category *"
+                  label="category *"
                 >
                   <MenuItem value="" disabled>
                     <em> Select a category...</em>
+                    {allCategories.map((categoryOption) => (
+                      <MenuItem key={categoryOption} value={categoryOption}>
+                        {categoryOption}
+                      </MenuItem>
+                    ))}
                   </MenuItem>
-                  {allCategories.map((categoryOption) => (
-                    <MenuItem key={categoryOption} value={categoryOption}>
-                      {categoryOption}
-                    </MenuItem>
-                  ))}
-                  <MenuItem value="addNewCategory">Add New Category</MenuItem>
                 </Select>
               </FormControl>
-            </div>{" "}
-            <Dialog open={showNewCategoryModal} onClose={handleCloseModal}>
-              <DialogTitle>Add New Category</DialogTitle>
-              <DialogContent>
-                <TextField
-                  label="Category Name"
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                />
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCloseModal}>Cancel</Button>
-                <Button onClick={handleAddCategory}>Add</Button>
-              </DialogActions>
-            </Dialog>
+            </div>
+            <select
+              id="category"
+              name="category"
+              className="border border-gray-300 text-black rounded-md p-2 focus:outline-none focus:border-blue-500"
+              value={category}
+            >
+              <option value="" disabled hidden>
+                Select a category...
+              </option>
+              {allCategories.map((categoryOption) => (
+                <option key={categoryOption} value={categoryOption}>
+                  {/* Customized Option */}
+                  <div className="flex items-center">
+                    <span className="mr-2">
+                      {/* Add any custom icon or content here */}
+                    </span>
+                    {categoryOption}
+                  </div>
+                </option>
+              ))}
+              <option value="addNewCategory">
+                {/* Customized "Add New Category" Option */}
+                Add New Category
+              </option>
+            </select>
+
             <button
               onClick={upload}
               className="w-full mt-10 bg-black text-white p-2 rounded-lg hover:scale(0.9)"
@@ -245,8 +259,7 @@ const UploadPage: React.FC<UploadPageProps> = () => {
           {/* Background Image */}
           <div className="w-full h-full hidden md:block justify-center">
             <Image
-              // src="/novs_10_06_-20231128-0001.jpg"
-              src=""
+              src="/novs_10_06_-20231128-0001.jpg"
               alt="img"
               className="w-[400px] h-full hidden rounded-r-2xl md:block object-cover"
               width={400}
@@ -254,15 +267,30 @@ const UploadPage: React.FC<UploadPageProps> = () => {
             />
           </div>
           {/* Dropzone */}
-          <FileDropzone
-            isDragging={isDragging}
-            handleClick={handleClick}
-            handleDragEnter={handleDragEnter}
-            handleDragLeave={handleDragLeave}
-            handleDrop={handleDrop}
-            fileInputRef={fileInputRef}
-            handleFileChange={handleFileChange}
-          />
+          <div
+            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 bg-white bg-opacity-30 backdrop-blur-sm rounded-3xl drop-shadow-lg md:flex md:items-center md:justify-center cursor-pointer h-80 w-80 ${
+              isDragging ? "border-dashed border-2 border-blue-500" : ""
+            }`}
+            onClick={handleClick}
+            onDragOver={handleDragEnter}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <label
+              htmlFor="fileInput"
+              className="text-center text-white text-xl md:text-lg lg:text-xl xl:text-2xl cursor-pointer"
+            >
+              <p className="mb-2">Drag and drop your file here</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="fileInput"
+                onChange={handleFileChange}
+                className="w-full h-16 md:w-64 md:h-60 cursor-pointer text-base md:text-xl hidden"
+              />
+            </label>
+          </div>
         </div>
       </div>
       {/* Delete File Section */}
@@ -289,12 +317,9 @@ const UploadPage: React.FC<UploadPageProps> = () => {
               ))}
             </ol>
           </div>
-        )}{" "}
+        )}
       </div>{" "}
-      {/* Display selected and uploaded files */}
       <Toaster position="bottom-right" />
     </div>
   );
 };
-
-export default UploadPage;

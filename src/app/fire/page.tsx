@@ -1,175 +1,237 @@
 "use client";
-import React, { ChangeEvent, useEffect, useState } from "react";
-import { getDownloadURL, listAll, ref, uploadBytes } from "firebase/storage";
-import Image from "next/image";
-import { storage } from "../firebase/firebase-config";
 
-// Define the Home component
+// Import necessary functions and components from Firebase and Next.js
+import React, { ChangeEvent, useEffect, useState } from "react";
+import { getDownloadURL, list, ref, uploadBytes } from "firebase/storage";
+import Image from "next/image";
+import { storage } from "@/app/config/firebase";
+
+// Define the main component function
 export default function Home() {
+  // State variables to manage file upload, file URL, photo name, category, view option, and uploaded files
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [photoName, setPhotoName] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  const [viewOption, setViewOption] = useState<string>("category");
+  const [viewOption, setViewOption] = useState<string>("all");
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
+  // useEffect hook to fetch categories when the component mounts
   useEffect(() => {
-    // ...
+    fetchAllCategories();
+  }, []);
+
+  // Function to fetch all categories from the Firebase storage
+  const fetchAllCategories = async () => {
+    try {
+      const photoDirectoryRef = ref(storage, "photo");
+      const photoItems = await list(photoDirectoryRef);
+      // Extract category names from the prefixes and set them in the state
+      const categories = photoItems.prefixes.map((prefix) => prefix.name);
+      setAllCategories(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // useEffect hook to fetch uploaded files when the view option or category changes
+  useEffect(() => {
     const fetchUploadedFiles = async () => {
       try {
         let urls: string[] = [];
 
+        // If the view option is "category" and a category is selected
         if (viewOption === "category" && category) {
           const categoryDirectoryRef = ref(storage, `photo/${category}`);
-          const categoryItems = await listAll(categoryDirectoryRef);
+          const categoryItems = await list(categoryDirectoryRef);
+          // Fetch URLs for files in the selected category
           urls = await Promise.all(
             categoryItems.items.map(async (item) => await getDownloadURL(item))
           );
         } else if (viewOption === "all") {
-          const allItems = await listAll(ref(storage, "photo"));
+          // If the view option is "all"
 
-          // Fetch files from the "landscape" folder
-          const landscapeDirectoryRef = ref(storage, "photo/landscape");
-          const landscapeItems = await listAll(landscapeDirectoryRef);
-          const landscapeUrls = await Promise.all(
-            landscapeItems.items.map(async (item) => await getDownloadURL(item))
-          );
-
-          // Fetch files from the "portraits" folder
-          const portraitsDirectoryRef = ref(storage, "photo/portraits");
-          const portraitsItems = await listAll(portraitsDirectoryRef);
-          const portraitsUrls = await Promise.all(
-            portraitsItems.items.map(async (item) => await getDownloadURL(item))
-          );
-
-          urls = [...landscapeUrls, ...portraitsUrls];
-
-          // Add files from the root folder
+          // Fetch files from the root folder
+          const allItems = await list(ref(storage, "photo"));
           const rootUrls = await Promise.all(
             allItems.items.map(async (item) => await getDownloadURL(item))
           );
 
-          urls = [...urls, ...rootUrls];
+          // Fetch files from all subfolders
+          const subfolderUrls = await Promise.all(
+            allCategories.map(async (cat) => {
+              const subfolderDirectoryRef = ref(storage, `photo/${cat}`);
+              const subfolderItems = await list(subfolderDirectoryRef);
+              // Fetch URLs for files in each subfolder
+              return Promise.all(
+                subfolderItems.items.map(
+                  async (item) => await getDownloadURL(item)
+                )
+              );
+            })
+          );
+
+          // Concatenate root and subfolder URLs
+          urls = [...rootUrls, ...subfolderUrls.flat()];
         }
 
+        // Set the fetched URLs in the state
         setUploadedFiles(urls);
       } catch (error) {
         console.error("Error fetching uploaded files:", error);
       }
     };
-    // ...
 
+    // Trigger the fetchUploadedFiles function when the view option, category, or allCategories changes
     fetchUploadedFiles();
-  }, [viewOption, category]); // Triggered when the view option or category changes
+  }, [viewOption, category, allCategories]);
 
+  // Function to handle the change in the selected category
+  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategory = e.target.value;
+
+    // If the user selects "addNewCategory", prompt for a new category
+    if (selectedCategory === "addNewCategory") {
+      const newCategory = prompt("Enter a new category:");
+
+      if (newCategory) {
+        // Check if the new category already exists
+        if (allCategories.includes(newCategory)) {
+          alert("Category already exists. Please choose a different name.");
+        } else {
+          // Add the new category to the list and set it as the selected category
+          setAllCategories([...allCategories, newCategory]);
+          setCategory(newCategory);
+        }
+      } else {
+        // If the user cancels the prompt, reset the category to an empty value
+        setCategory("");
+      }
+    } else {
+      // Set the selected category
+      setCategory(selectedCategory);
+    }
+  };
+
+  // Function to handle the change in the selected file
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
+      // Set the selected file in the state
       setFileUpload(e.target.files[0]);
     }
   };
 
+  // Function to handle file upload
   const upload = async () => {
     if (fileUpload !== null) {
-      if (!photoName || !category) {
-        alert("Please enter a photo name and select a category");
+      // If a file is selected
+
+      if (!category) {
+        // If no category is selected, show an alert
+        alert("Please select a category");
         return;
       }
 
-      const fileRef = ref(storage, `photo/${category}/${photoName}`);
+      // Reference to the file in the Firebase storage
+      const fileRef = ref(storage, `photo/${category}/${fileUpload.name}`);
 
       try {
+        // Upload the file to the storage
         const data = await uploadBytes(fileRef, fileUpload);
         console.log("Upload successful", data);
 
+        // Get the download URL of the uploaded file
         const url = await getDownloadURL(data.ref);
         console.log("File URL", url);
 
+        // Set the file URL in the state and add it to the uploaded files list
         setFileUrl(url);
         setUploadedFiles([...uploadedFiles, url]);
       } catch (error) {
         console.error("Upload error", error);
       }
     } else {
+      // If no file is selected, show an alert
       alert("No file selected");
     }
   };
 
+  // JSX to render the component UI
   return (
-    <div className="max-w-3xl mx-auto mt-8 p-4 border rounded-md shadow-md">
-      {/* Input for file selection */}
-      <input
-        type="file"
-        onChange={handleFileChange}
-        className="border border-gray-300 p-2 mb-4"
-      />
+    <div className="container mx-auto mt-8 p-4 border rounded-md shadow-md">
+      <div className="mb-4">
+        {/* Input for selecting a file */}
+        <input
+          type="file"
+          onChange={handleFileChange}
+          className="border border-gray-300 p-2"
+        />
+      </div>
 
-      {/* Input for entering the photo name */}
-      <input
-        type="text"
-        placeholder="Enter photo name"
-        value={photoName}
-        className="border border-gray-300 text-black rounded-md p-2 mb-4"
-        onChange={(e) => setPhotoName(e.target.value)}
-      />
+      <div className="mb-4">
+        {/* Dropdown for selecting a category */}
+        <label
+          htmlFor="category"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Select a category:
+        </label>
+        <select
+          id="category"
+          name="category"
+          className="border border-gray-300 text-black rounded-md p-2"
+          value={category}
+          onChange={handleCategoryChange}
+        >
+          <option value="">Select...</option>
+          {/* Generate options for existing categories */}
+          {allCategories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+          {/* Option to add a new category */}
+          <option value="addNewCategory">Add New Category</option>
+        </select>
+      </div>
 
-      {/* Input for selecting a category */}
-      <label
-        htmlFor="category"
-        className="block text-sm font-medium text-gray-700 mb-2"
-      >
-        Select a category:
-      </label>
-      <select
-        id="category"
-        name="category"
-        className="border border-gray-300 text-black rounded-md p-2 mb-4"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      >
-        <option value="">Select...</option>
-        <option value="landscape">Landscape</option>
-        <option value="portraits">Portraits</option>
-        {/* Add more categories as needed */}
-      </select>
+      <div className="mb-4">
+        {/* Dropdown for selecting the view option */}
+        <label
+          htmlFor="viewOption"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          View option:
+        </label>
+        <select
+          id="viewOption"
+          name="viewOption"
+          className="border border-gray-300 text-black rounded-md p-2"
+          value={viewOption}
+          onChange={(e) => setViewOption(e.target.value)}
+        >
+          {/* Options for viewing files by category or all files */}
+          <option value="category">By Category</option>
+          <option value="all">All Files</option>
+        </select>
+      </div>
 
-      {/* Dropdown for selecting view option */}
-      <label
-        htmlFor="viewOption"
-        className="block text-sm font-medium text-gray-700 mb-2"
-      >
-        View option:
-      </label>
-      <select
-        id="viewOption"
-        name="viewOption"
-        className="border border-gray-300 text-black rounded-md p-2 mb-4"
-        value={viewOption}
-        onChange={(e) => setViewOption(e.target.value)}
-      >
-        <option value="category">By Category</option>
-        <option value="all">All Files</option>
-      </select>
+      <div className="mb-4">
+        {/* Conditionally render the button only if a file is selected */}
+        {fileUpload && (
+          <button
+            onClick={upload}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Upload
+          </button>
+        )}
+      </div>
 
-      {/* Button to trigger the upload function */}
-      <button
-        onClick={upload}
-        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-      >
-        Upload
-      </button>
-
-      {/* Display the image if URL is available */}
-      {fileUrl && (
-        <div className="mt-4">
-          <p className="font-bold">File URL:</p>
-          <p>{fileUrl}</p>
-          <Image src={fileUrl} alt="Uploaded Image" width={300} height={200} />
-        </div>
-      )}
-
-      {/* Display all uploaded files */}
       {uploadedFiles.length > 0 && (
         <div className="mt-4">
+          {/* Display the list of uploaded files with image previews */}
           <h2 className="font-bold text-lg mb-2">Uploaded Files:</h2>
           <div className="flex flex-wrap">
             {uploadedFiles.map((url, index) => (
