@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react";
-import { imgDB } from "@/app/config/firebase";
+import { imgDB } from "@/config/firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {v4} from 'uuid'
 

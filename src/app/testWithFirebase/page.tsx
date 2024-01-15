@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db } from "../../config/firebase";
 
 async function addDataToFirestore(name: string, email: string) {
   try {

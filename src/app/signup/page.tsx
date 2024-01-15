@@ -7,18 +7,30 @@ import { LoginSchemaType, loginSchema } from "../../models/LoginSchema";
 import FormInput from "@/components/Input";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
-import Link from "next/link";
+import NextLink from "next/link";
 import Image from "next/image";
-import { Button } from "@mui/material";
+import { Button, Link, Typography } from "@mui/material";
 import axios from "axios";
 import { hashPassword } from "../utils/hash-password";
+import Avatar from "@mui/material/Avatar";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
+const defaultTheme = createTheme();
 type Inputs = {
   email: string;
   password: string;
 };
 
 const LoginForm = () => {
+  const [isShowPassword, setIsShowPassword] = React.useState(false);
   const router = useRouter();
   const {
     register,
@@ -61,74 +73,112 @@ const LoginForm = () => {
         return;
       }
       toast(error.message);
-      
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
-        {/* left side */}
-        <div className="flex flex-col justify-center p-8 md:p-14">
-          <span className="mb-3 text-4xl font-bold text-black">Welcome!</span>
-          <span className="font-light text-gray-400 mb-8">
-            Enter the email and the password provided.
-          </span>
-          <form onSubmit={handleSubmit(onSubmit)} className="py-4 ">
-            {/* Email input using the FormInput component */}
-            <FormInput
-              name="email"
-              label="Email"
-              type="email"
-              id="email"
-              register={register}
-              error={errors.email}
-              disabled={isSubmitting}
-            />
+    <ThemeProvider theme={defaultTheme}>
+      <Grid container component='main' sx={{ height: "100vh" }}>
+        <CssBaseline />
+        <Grid
+          item
+          xs={false}
+          sm={4}
+          md={7}
+          sx={{
+            backgroundImage:
+              "url(https://source.unsplash.com/random?wallpapers)",
+            backgroundRepeat: "no-repeat",
+            backgroundColor: (t) =>
+              t.palette.mode === "light"
+                ? t.palette.grey[50]
+                : t.palette.grey[900],
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+          <Box
+            sx={{
+              my: 8,
+              mx: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component='h1' variant='h5'>
+              Sign in
+            </Typography>
 
-            {/* Password input using the FormInput component */}
-            <FormInput
-              label="Password"
-              name="password"
-              type="password"
-              id="password"
-              register={register}
-              error={errors.password}
-              disabled={isSubmitting}
-            />
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full mt-10 bg-black text-white p-2 rounded-lg  hover:scale(0.9)"
-              style={{ transition: "all 0.3s ease-in-out" }}
+            <Box
+              component='form'
+              noValidate
+              onSubmit={handleSubmit(onSubmit)}
+              sx={{ mt: 1 }}
             >
-              Sign up
-            </button>
-          </form>
-        </div>
-        {/* right side */}
-        <div className="relative">
-          <Image
-            src="/novs_10_06_-20231128-0001.jpg"
-            alt="img"
-            className="w-[400px] h-full hidden rounded-r-2xl md:block object-cover"
-            width={400}
-            height={500}
-          />
-          {/* text on image */}
-          <div className="absolute hidden bottom-10 right-6 p-6 bg-white bg-opacity-30 backdrop-blur-sm rounded drop-shadow-lg md:block">
-            <div className="text-center text-white text-xl md:text-lg lg:text-xl xl:text-2xl">
-              Turning fleeting moments
-              <br />
-              into everlasting memories,
-              <br />
-              one click at a time
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              <TextField
+                margin='normal'
+                required
+                fullWidth
+                id='email'
+                label='Email Address'
+                name='email'
+                autoComplete='email'
+                autoFocus
+              />
+              <TextField
+                margin='normal'
+                required
+                fullWidth
+                name='password'
+                label='Password'
+                type={isShowPassword ? "text" : "password"}
+                id='password'
+                autoComplete='current-password'
+              />
+              <TextField
+                margin='normal'
+                required
+                fullWidth
+                name='confirm_password'
+                label='Confirm Password'
+                type={isShowPassword ? "text" : "password"}
+                id='password'
+              />
+              <FormControlLabel
+                onClick={() => setIsShowPassword(!isShowPassword)}
+                control={<Checkbox value='remember' color='primary' />}
+                label='Show Password'
+              />
+              <Button
+                type='submit'
+                fullWidth
+                variant='contained'
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Submit
+              </Button>
+              <Grid container>
+                <Grid item xs>
+                  <Link component={NextLink} href='#'>
+                    Forgot password?
+                  </Link>
+                </Grid>
+                <Grid item>
+                  <Link component={NextLink} href='/login'>
+                    {"Already have an account? Sign In"}
+                  </Link>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </ThemeProvider>
   );
 };
 

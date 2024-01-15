@@ -9,7 +9,7 @@ import {
   uploadBytes,
   uploadBytesResumable,
 } from "firebase/storage";
-import { storage } from "@/app/config/firebase";
+import { storage } from "@/config/firebase";
 import { Toaster, toast } from "sonner";
 import LinearProgress from "@mui/material/LinearProgress";
 import { Box, FormHelperText, TextField } from "@mui/material";

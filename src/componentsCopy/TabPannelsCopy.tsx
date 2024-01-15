@@ -40,7 +40,7 @@ import Masonry from "react-masonry-css";
 
 // Image data
 // import galleryImages from "./Images";
-import { storage } from "@/app/config/firebase";
+import { storage } from "@/config/firebase";
 import { getDownloadURL, list, ref } from "firebase/storage";
 
 interface TabPannelsCopyProps {

@@ -8,7 +8,7 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { storage } from "@/app/config/firebase";
+import { storage } from "@/config/firebase";
 import { Toaster, toast } from "sonner";
 import Image from "next/image";
 import InputLabel from "@mui/material/InputLabel";
