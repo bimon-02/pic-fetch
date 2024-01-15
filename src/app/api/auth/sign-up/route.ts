@@ -8,6 +8,7 @@ import { addDoc, collection } from "firebase/firestore";
 export async function POST(request: NextRequest) {
   try {
     const reqBody = await request.json();
+    
     const isValidBody = await CreateUserSchema.safeParseAsync(reqBody);
     if (!isValidBody.success) {
       return APIRES({
@@ -24,7 +25,13 @@ export async function POST(request: NextRequest) {
         error: "Email and password are required",
       });
     }
-    const user = await createUserUsingEmailAndPassword(data);
+    
+    const user = await createUserUsingEmailAndPassword({
+      email: data.email,
+      password: data.password,
+    });
+    console.log(data);
+
     if (!user) {
       return APIRES({
         status: HttpStatus.InternalServerError,
@@ -56,13 +63,11 @@ export async function POST(request: NextRequest) {
     if (error.code === "auth/email-already-in-use") {
       return APIRES({
         status: HttpStatus.NotAcceptable,
-        message: APIMessages[HttpStatus.NotAcceptable],
-        error: {
-          code: "Email Exists",
-          message: "Please login instead",
-        },
+        message: 'Email already exists, Please login',
+        error: error
       });
     }
+console.log(error);
 
     return APIRES({
       status: HttpStatus.InternalServerError,
