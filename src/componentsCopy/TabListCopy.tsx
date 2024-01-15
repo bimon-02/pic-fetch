@@ -2,7 +2,7 @@ import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import React, { useEffect, useState } from "react";
 import { list, ref } from "firebase/storage";
-import { storage } from "@/app/config/firebase";
+import { storage } from "@/config/firebase";
 
 interface TabListCopyProps {
   setCategory: (category: string) => void;

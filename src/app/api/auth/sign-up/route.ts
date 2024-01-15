@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { APIMessages, APIRES, HttpStatus } from "../../_lib";
 import { CreateUserSchema } from "@/models/create-user-schema";
 import { createUserUsingEmailAndPassword } from "./_lib/create-user-with-email-and-password";
-import { db } from "@/app/config/firebase";
+import { db } from "@/config/firebase";
 import { addDoc, collection } from "firebase/firestore";
 
 export async function POST(request: NextRequest) {

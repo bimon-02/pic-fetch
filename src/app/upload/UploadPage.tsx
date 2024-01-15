@@ -2,7 +2,7 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { getDownloadURL, list, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
-import { storage } from "@/app/config/firebase";
+import { storage } from "@/config/firebase";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {

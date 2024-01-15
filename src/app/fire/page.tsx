@@ -4,7 +4,7 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { getDownloadURL, list, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
-import { storage } from "@/app/config/firebase";
+import { storage } from "@/config/firebase";
 
 // Define the main component function
 export default function Home() {

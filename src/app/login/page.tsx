@@ -98,14 +98,14 @@ const LoginForm = () => {
               disabled={isSubmitting}
             />
 
-            <button
+            <Button
               type='submit'
+              variant='contained'
               disabled={isSubmitting}
-              className='w-full mt-10 bg-black text-white p-2 rounded-lg  hover:scale(0.9)'
               style={{ transition: "all 0.3s ease-in-out" }}
             >
               Sign in
-            </button>
+            </Button>
           </form>
         </div>
         {/* right side */}

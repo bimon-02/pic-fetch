@@ -1,4 +1,4 @@
-import auth from "@/app/config/firebase";
+import auth from "@/config/firebase";
 import { hashPassword } from "@/app/utils/hash-password";
 import { loginSchema } from "@/models/LoginSchema";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       status: 200,
       message: "Login Success",
       data: user.user.toJSON(),
-    }); 
+    });
   } catch (error: any) {
     console.log(error);
     return NextResponse.json({
