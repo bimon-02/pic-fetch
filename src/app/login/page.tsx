@@ -1,25 +1,41 @@
 "use client";
 
-import React from "react";
-import { useForm, SubmitHandler, FieldValue } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoginSchemaType, loginSchema } from "../../models/LoginSchema";
+import { LoginSchemaType, loginSchema } from "../../models/validationSchema";
 import FormInput from "@/components/Input";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
-import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@mui/material";
 import axios from "axios";
-import { hashPassword } from "../utils/hash-password";
+import * as React from "react";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Link from "@mui/material/Link";
+import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import Typography from "@mui/material/Typography";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 type Inputs = {
   email: string;
   password: string;
+  confirm_password: string;
 };
 
-const LoginForm = () => {
+const SignInForm = () => {
+  const [showPassword, setShowPassword] = React.useState(false);
+
   const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -28,109 +44,151 @@ const LoginForm = () => {
     defaultValues: {
       email: "",
       password: "",
+      confirm_password: "",
     },
     resolver: zodResolver(loginSchema),
     mode: "onSubmit",
   });
 
   const onSubmit: SubmitHandler<Inputs> = async (data: LoginSchemaType) => {
+    toast.loading("Please wait...");
+   
 
     try {
       const res = await axios.post("/api/auth/sign-in", {
         email: data.email,
         password: data.password,
       });
+
       if (res.data.status === 401) {
         console.log(res.data.message);
         toast(res.data.message);
-        return;
       } else if (res.data.status === 200) {
         console.log(res.data);
+        toast.success("Successfully logged in!");
         toast(res.data.message);
-        return;
+      } else if (res.data.status === 404) {
+        toast(res.data.message);
       }
-      toast(res.data.message);
-      return;
     } catch (error: any) {
       console.log(error.code);
+
       if (error.code === "ECONNREFUSED") {
         toast("Server is not running");
-        return;
       }
+
       if (error.code === "ERR_BAD_RESPONSE") {
         toast("Connection error");
-        return;
       }
-      toast(error.message);
 
+      toast(error.message);
     }
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
-      <div className='relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0'>
-        {/* left side */}
-        <div className='flex flex-col justify-center p-8 md:p-14'>
-          <span className='mb-3 text-4xl font-bold text-black'>Welcome!</span>
-          <span className='font-light text-gray-400 mb-8'>
-            Enter the email and the password provided.
-          </span>
-          <form onSubmit={handleSubmit(onSubmit)} className='py-4 '>
-            {/* Email input using the FormInput component */}
-            <FormInput
-              name='email'
-              label='Email'
-              type='email'
-              id='email'
-              register={register}
-              error={errors.email}
-              disabled={isSubmitting}
-            />
-
-            {/* Password input using the FormInput component */}
-            <FormInput
-              label='Password'
-              name='password'
-              type='password'
-              id='password'
-              register={register}
-              error={errors.password}
-              disabled={isSubmitting}
-            />
-
-            <Button
-              type='submit'
-              variant='contained'
-              disabled={isSubmitting}
-              style={{ transition: "all 0.3s ease-in-out" }}
-            >
+    <ThemeProvider theme={createTheme()}>
+      <Grid container component="main" sx={{ height: "100vh" }}>
+        <CssBaseline />
+        <Grid
+          item
+          xs={false}
+          sm={4}
+          md={7}
+          sx={{
+            backgroundImage:
+              "url(https://source.unsplash.com/random?wallpapers)",
+            backgroundRepeat: "no-repeat",
+            backgroundColor: (t) =>
+              t.palette.mode === "light"
+                ? t.palette.grey[50]
+                : t.palette.grey[900],
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+          <Box
+            sx={{
+              my: 8,
+              mx: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
               Sign in
-            </Button>
-          </form>
-        </div>
-        {/* right side */}
-        <div className='relative'>
-          <Image
-            src='/novs_10_06_-20231128-0001.jpg'
-            alt='img'
-            className='w-[400px] h-full hidden rounded-r-2xl md:block object-cover'
-            width={400}
-            height={500}
-          />
-          {/* text on image */}
-          <div className='absolute hidden bottom-10 right-6 p-6 bg-white bg-opacity-30 backdrop-blur-sm rounded drop-shadow-lg md:block'>
-            <div className='text-center text-white text-xl md:text-lg lg:text-xl xl:text-2xl'>
-              Turning fleeting moments
-              <br />
-              into everlasting memories,
-              <br />
-              one click at a time
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Typography>
+            <Box
+              component="form"
+              noValidate
+              onSubmit={handleSubmit(onSubmit)}
+              sx={{ mt: 1 }}
+            >
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                error={Boolean(errors.email)}
+                helperText={errors.email?.message}
+                autoComplete="email"
+                autoFocus
+                {...register("email")}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                error={Boolean(errors.password)}
+                helperText={errors.password?.message}
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                id="password"
+                autoComplete="current-password"
+                {...register("password")}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    icon={<VisibilityOff />}
+                    checkedIcon={<Visibility />}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    color="primary"
+                  />
+                }
+                label="Show password"
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Sign In
+              </Button>
+              <Grid container>
+                <Grid item xs>
+                  <Link href="#" variant="body2">
+                    Forgot password?
+                  </Link>
+                </Grid>
+                <Grid item>
+                  <Link href="/signup" variant="body2">
+                    {"Don't have an account? Sign Up"}
+                  </Link>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </ThemeProvider>
   );
 };
 
-export default LoginForm;
+export default SignInForm;

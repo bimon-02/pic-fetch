@@ -1,7 +1,10 @@
 import auth from "@/config/firebase";
 import { hashPassword } from "@/app/utils/hash-password";
-import { loginSchema } from "@/models/LoginSchema";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { loginSchema } from "@/models/validationSchema";
+import {
+  fetchSignInMethodsForEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createUserUsingEmailAndPassword } from "../sign-up/_lib/create-user-with-email-and-password";
 
@@ -17,6 +20,9 @@ export async function POST(request: NextRequest) {
       });
     }
     const data = isValidData.data;
+    
+
+
     const user = await signInWithEmailAndPassword(
       auth,
       data.email,
