@@ -3,12 +3,12 @@ import { APIMessages, APIRES, HttpStatus } from "../../_lib";
 import { CreateUserSchema } from "@/models/create-user-schema";
 import { createUserUsingEmailAndPassword } from "./_lib/create-user-with-email-and-password";
 import { db } from "@/config/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 
 export async function POST(request: NextRequest) {
   try {
     const reqBody = await request.json();
-    
+
     const isValidBody = await CreateUserSchema.safeParseAsync(reqBody);
     if (!isValidBody.success) {
       return APIRES({
@@ -25,7 +25,20 @@ export async function POST(request: NextRequest) {
         error: "Email and password are required",
       });
     }
-    
+    // Check if the email already exists
+    const emailExistsQuery = query(
+      collection(db, "users"),
+      where("email", "==", data.email)
+    );
+    const existingEmailSnapshot = await getDocs(emailExistsQuery);
+
+    if (!existingEmailSnapshot.empty) {
+      return APIRES({
+        status: HttpStatus.NotAcceptable,
+        message: "Email already exists, please login.",
+      });
+    }
+
     const user = await createUserUsingEmailAndPassword({
       email: data.email,
       password: data.password,
@@ -63,11 +76,11 @@ export async function POST(request: NextRequest) {
     if (error.code === "auth/email-already-in-use") {
       return APIRES({
         status: HttpStatus.NotAcceptable,
-        message: 'Email already exists, Please login',
-        error: error
+        message: "Email already exists, Please login",
+        error: error,
       });
     }
-console.log(error);
+    console.log(error);
 
     return APIRES({
       status: HttpStatus.InternalServerError,

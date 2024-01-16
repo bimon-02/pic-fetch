@@ -1,10 +1,9 @@
 // utils/validationSchemas.ts
 import { z } from "zod";
 
+// Login schema without confirm_password
 export const loginSchema = z.object({
-
   email: z.string().email("Please enter a valid email").trim(),
-
   password: z
     .string()
     .min(1, "Password is required")
@@ -24,4 +23,10 @@ export const loginSchema = z.object({
     }),
 });
 
+// Signup schema with confirm_password
+export const signupSchema = loginSchema.extend({
+  confirm_password: z.string(),
+});
+
+export type SignupSchemaType = z.infer<typeof signupSchema>;
 export type LoginSchemaType = z.infer<typeof loginSchema>;

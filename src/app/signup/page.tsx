@@ -1,84 +1,105 @@
 "use client";
 
-import React from "react";
-import { useForm, SubmitHandler, FieldValue } from "react-hook-form";
+import React, { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoginSchemaType, loginSchema } from "../../models/LoginSchema";
-import FormInput from "@/components/Input";
+import { LoginSchemaType, SignupSchemaType, signupSchema } from "../../models/validationSchema";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import NextLink from "next/link";
-import Image from "next/image";
-import { Button, Link, Typography } from "@mui/material";
-import axios from "axios";
-import { hashPassword } from "../utils/hash-password";
-import Avatar from "@mui/material/Avatar";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import {
+  Button,
+  Link,
+  Typography,
+  TextField,
+  Checkbox,
+  Paper,
+  Grid,
+  Avatar,
+  CssBaseline,
+  Box,
+  FormControlLabel,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import axios from "axios";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const defaultTheme = createTheme();
+
 type Inputs = {
   email: string;
   password: string;
+  confirm_password: string;
 };
 
 const LoginForm = () => {
-  const [isShowPassword, setIsShowPassword] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   const router = useRouter();
+
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
+    watch,
   } = useForm<Inputs>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "", confirm_password: "" },
+    resolver: zodResolver(signupSchema),
     mode: "onSubmit",
   });
 
-  const onSubmit: SubmitHandler<Inputs> = async (data: LoginSchemaType) => {
+  const confirm_password = watch("confirm_password");
+
+  const onSubmit: SubmitHandler<Inputs> = async (data: SignupSchemaType) => {
+    if (data.password !== data.confirm_password) {
+      setError("confirm_password", {
+        type: "manual",
+        message: "Passwords do not match",
+      });
+      return;
+    }
+
     try {
       const res = await axios.post("/api/auth/sign-up", {
         email: data.email,
         password: data.password,
+        confirm_password: data.confirm_password,
       });
+
       if (res.data.status === 401) {
         console.log(res.data.message);
-        toast(res.data.message);
-        return;
+        toast.error(res.data.message);
       } else if (res.data.status === 200) {
         console.log(res.data);
-        toast(res.data.message);
+        toast.success("Successfully signed up!");
+        router.push("/login");
+      } else if (res.data.status === 404) {
+        toast.error(res.data.message);
+      }
+      if (res.data.status === 406) {
+        toast.error(res.data.message);
         return;
       }
-      toast(res.data.message);
-      return;
     } catch (error: any) {
       console.log(error.code);
+
       if (error.code === "ECONNREFUSED") {
-        toast("Server is not running");
-        return;
+        toast.error("Server is not running");
       }
+
       if (error.code === "ERR_BAD_RESPONSE") {
-        toast("Connection error");
-        return;
+        toast.error("Connection error");
       }
-      toast(error.message);
+
+      toast.error(error.message);
     }
   };
 
   return (
     <ThemeProvider theme={defaultTheme}>
-      <Grid container component='main' sx={{ height: "100vh" }}>
+      <Grid container component="main" sx={{ height: "100vh" }}>
         <CssBaseline />
         <Grid
           item
@@ -110,66 +131,77 @@ const LoginForm = () => {
             <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
               <LockOutlinedIcon />
             </Avatar>
-            <Typography component='h1' variant='h5'>
-              Sign in
+            <Typography component="h1" variant="h5">
+              Sign up
             </Typography>
-
             <Box
-              component='form'
+              component="form"
               noValidate
               onSubmit={handleSubmit(onSubmit)}
               sx={{ mt: 1 }}
             >
               <TextField
-                margin='normal'
+                margin="normal"
                 required
                 fullWidth
-                id='email'
-                label='Email Address'
-                name='email'
-                autoComplete='email'
+                id="email"
+                label="Email Address"
+                error={Boolean(errors.email)}
+                helperText={errors.email?.message}
+                autoComplete="email"
                 autoFocus
+                {...register("email")}
               />
               <TextField
-                margin='normal'
+                margin="normal"
                 required
                 fullWidth
-                name='password'
-                label='Password'
-                type={isShowPassword ? "text" : "password"}
-                id='password'
-                autoComplete='current-password'
+                label="Password"
+                error={Boolean(errors.password)}
+                helperText={errors.password?.message}
+                type={showPassword ? "text" : "password"}
+                id="password"
+                autoComplete="current-password"
+                {...register("password")}
               />
               <TextField
-                margin='normal'
+                margin="normal"
                 required
                 fullWidth
-                name='confirm_password'
-                label='Confirm Password'
-                type={isShowPassword ? "text" : "password"}
-                id='password'
+                label="Confirm Password"
+                type={showPassword ? "text" : "password"}
+                id="confirm_password"
+                {...register("confirm_password")}
+                helperText={errors.confirm_password?.message}
+                error={Boolean(errors.confirm_password)}
               />
               <FormControlLabel
-                onClick={() => setIsShowPassword(!isShowPassword)}
-                control={<Checkbox value='remember' color='primary' />}
-                label='Show Password'
+                control={
+                  <Checkbox
+                    icon={<VisibilityOff />}
+                    checkedIcon={<Visibility />}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    color="primary"
+                  />
+                }
+                label="Show password"
               />
               <Button
-                type='submit'
+                type="submit"
                 fullWidth
-                variant='contained'
+                variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
                 Submit
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link component={NextLink} href='#'>
+                  <Link component={NextLink} href="#">
                     Forgot password?
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link component={NextLink} href='/login'>
+                  <Link component={NextLink} href="/login">
                     {"Already have an account? Sign In"}
                   </Link>
                 </Grid>

@@ -3,7 +3,7 @@
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "../../models/LoginSchema";
+import { loginSchema } from "../../models/validationSchema";
 import FormInput from "@/components/Input";
 import { useRouter } from "next/navigation"; // Import useRouter from next/router
 import { Toaster, toast } from "sonner";
