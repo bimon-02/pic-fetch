@@ -74,7 +74,7 @@ const LoginForm = () => {
       } else if (res.data.status === 200) {
         console.log(res.data);
         toast.success("Successfully signed up!");
-        router.push("/login");
+        router.push("/dashboard");
       } else if (res.data.status === 404) {
         toast.error(res.data.message);
       }

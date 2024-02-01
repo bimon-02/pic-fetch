@@ -4,7 +4,6 @@ import React from "react";
 import LoginForm from "./login/page";
 import Portfolio from "../Tempo/Portfolio";
 import Link from "next/link";
-// import LoginForm from "@/app/LoginPage";
 
 const Home = () => {
   return (

@@ -29,19 +29,19 @@ const Navbar = () => {
 
       {/* Navigation Links */}
       <div className="hidden sm:flex items-center space-x-4">
-        <Link href="/login" className="hover:bg-opacity-90 pr-4 text-white">
+        <Link href="/login" className="hover:bg-opacity-90 pr-4 text-black">
           Sign In
         </Link>
-        <Link href="/" className="hover:bg-opacity-90 pr-4 text-white">
+        <Link href="/" className="hover:bg-opacity-90 pr-4 text-black">
           Home
         </Link>
-        <Link href="/gallery" className="hover:bg-opacity-90 pr-4 text-white">
+        <Link href="/gallery" className="hover:bg-opacity-90 pr-4 text-black">
           Gallery
         </Link>
         <Link
           href="/upload"
           target="_blank"
-          className="hover:bg-opacity-90 pr-4 text-white"
+          className="hover:bg-opacity-90 pr-4 text-black"
         >
           Upload
         </Link>
